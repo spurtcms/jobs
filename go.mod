@@ -4,10 +4,13 @@ go 1.20
 
 require (
 	github.com/spurtcms/auth v0.0.5
+	github.com/spurtcms/member v0.0.6
 	github.com/spurtcms/team-roles v0.0.3
 	golang.org/x/crypto v0.21.0
 	gorm.io/gorm v1.25.10
 )
+
+require github.com/google/uuid v1.6.0 // indirect
 
 require (
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
