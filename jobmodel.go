@@ -197,7 +197,7 @@ func (jobsmodel JobsModel) JobUpdate(job *TblJobs, DB *gorm.DB) error {
 
 func (jobsmodel JobsModel) JobDelete(job *TblJobs, DB *gorm.DB) error {
 
-	if err := DB.Model(TblJobs{}).Where("id = ?", job.Id).UpdateColumns(map[string]interface{}{"is_deleted": job.IsDeleted, "deleted_on": job.DeletedOn, "deleted_by": job.DeletedBy}).Error; err != nil {
+	if err := DB.Model(TblJobs{}).Where("id = ?", job.Id).UpdateColumns(map[string]interface{}{"is_deleted": 1, "deleted_on": job.DeletedOn, "deleted_by": job.DeletedBy}).Error; err != nil {
 
 		return err
 	}
