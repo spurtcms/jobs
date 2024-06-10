@@ -273,9 +273,9 @@ func (Ap *Jobs) UpdateJob(Jc CreateJobReq, jobid int) error {
 
 	Updatejob.Salary = Jc.Salary
 
-	Updatejob.CreatedBy = Jc.CreatedBy
+	Updatejob.ModifiedBy = Jc.ModifiedBy
 
-	Updatejob.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	Updatejob.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 	err1 := Jobsmodel.JobUpdate(&Updatejob, Ap.DB)
 
@@ -290,7 +290,7 @@ func (Ap *Jobs) UpdateJob(Jc CreateJobReq, jobid int) error {
 
 //Job Delete Function//
 
-func (Ap *Jobs) DeleteJob(id int, modifiedBy int) error {
+func (Ap *Jobs) DeleteJob(id int, userid int) error {
 
 	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
@@ -299,9 +299,11 @@ func (Ap *Jobs) DeleteJob(id int, modifiedBy int) error {
 
 	var job TblJobs
 
-	job.ModifiedBy = modifiedBy
+	job.DeletedBy = userid
 
 	job.Id = id
+
+	job.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
 	err := Jobsmodel.JobDelete(&job, Ap.DB)
 

@@ -1,10 +1,13 @@
 package jobs
 
+import "C"
 import (
-	"github.com/spurtcms/member"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/spurtcms/member"
+	"gorm.io/gorm"
 )
 
 type TblJobsApplicants struct {
@@ -186,4 +189,235 @@ func (Ap *Jobs) CreateApplicant(ap CreateApplicantReq) error {
 	}
 
 	return nil
+}
+
+//Get Applicant by Id function//
+
+func (Ap *Jobs) GetApplicantById(id int) (ap TblJobsApplicants, err error) {
+
+	//check if auth or permission enabled
+	if autherr := AuthandPermission(Ap); autherr != nil {
+
+		return TblJobsApplicants{}, autherr
+	}
+
+	applicant, err := Jobsmodel.GetApplicantById(id, Ap.DB)
+
+	applicant.NameString = strings.ToUpper(applicant.Name[:1])
+
+	if err != nil {
+
+		return TblJobsApplicants{}, err
+	}
+
+	return applicant, nil
+
+}
+
+//Update Applicant Function//
+
+func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
+
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
+
+		return AuthErr
+	}
+
+	db := Ap.DBconf()
+
+	err := db.UpdateMember(member.MemberCreationUpdation{
+
+		FirstName: ap.Name,
+
+		Email: ap.EmailId,
+
+		MobileNo: ap.MobileNo,
+
+		ProfileImage: ap.Image,
+
+		ProfileImagePath: ap.ImagePath,
+
+		IsActive: 1,
+
+		Password: ap.Password,
+
+		ModifiedBy: ap.ModifiedBy,
+	}, memberid)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	var updateapplicant TblJobsApplicants
+
+	updateapplicant.MemberId = memberid
+
+	updateapplicant.Name = ap.Name
+
+	updateapplicant.EmailId = ap.EmailId
+
+	updateapplicant.MobileNo = ap.MobileNo
+
+	updateapplicant.JobType = ap.JobType
+
+	updateapplicant.Password = ap.Password
+
+	updateapplicant.Location = ap.Location
+
+	updateapplicant.Education = ap.Education
+
+	updateapplicant.Graduation = ap.Graduation
+
+	updateapplicant.Experience = ap.Experience
+
+	updateapplicant.Skills = ap.Skills
+
+	updateapplicant.CurrentSalary = ap.CurrentSalary
+
+	updateapplicant.ExpectedSalary = ap.ExpectedSalary
+
+	updateapplicant.ImagePath = ap.ImagePath
+
+	updateapplicant.Image = ap.Image
+
+	updateapplicant.Status = ap.Status
+
+	updateapplicant.ModifiedBy = ap.ModifiedBy
+
+	updateapplicant.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err1 := Jobsmodel.ApplicantUpdate(&updateapplicant, Ap.DB)
+
+	if err1 != nil {
+
+		return err1
+	}
+
+	return nil
+}
+
+//Function of Delete Applicant//
+
+func (Ap *Jobs) DeleteApplicant(memberid int, userid int, DB *gorm.DB) error {
+
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
+
+		return AuthErr
+	}
+
+	db := Ap.DBconf()
+
+	err := db.DeleteMember(memberid, userid)
+
+	if err != nil {
+
+		return err
+	}
+	var applicant TblJobsApplicants
+
+	applicant.DeletedBy = userid
+
+	applicant.MemberId = memberid
+
+	applicant.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err1 := Jobsmodel.ApplicantDelete(applicant, Ap.DB)
+
+	if err1 != nil {
+
+		return err
+	}
+
+	return nil
+}
+
+//Function of Getting Applicant Jobs//
+
+func (Ap *Jobs) GetApplicantJobs(ApplicantId int, limit int, offset int) (applicantjobs []TblJobs, Totaljobs int64, err error) {
+
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
+
+		return []TblJobs{}, 0, AuthErr
+	}
+
+	var jobslist []TblJobs
+
+	jobs, _, err1 := Jobsmodel.GetApplicantJobs(ApplicantId, limit, offset, Ap.DB)
+
+	if err1 != nil {
+
+		log.Println(err1)
+	}
+
+	for _, Job := range jobs {
+
+		for _, val := range Job.JobList {
+
+			val.CreatedDate = val.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
+
+			if !val.ModifiedOn.IsZero() {
+
+				val.CreatedDate = val.ModifiedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
+
+			} else {
+				val.CreatedDate = val.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
+
+			}
+			jobslist = append(jobslist, val)
+
+		}
+
+	}
+
+	_, totalcount, _ := Jobsmodel.GetApplicantJobs(ApplicantId, 0, 0, Ap.DB)
+
+	return jobslist, totalcount, nil
+}
+
+//Multiselect Job delete function//
+
+func (Ap *Jobs) MultiSelectedApplicantDelete(applicantids []int, modifiedby int) (bool, error) {
+
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
+		return false, AuthErr
+	}
+
+	var applicants TblJobsApplicants
+	applicants.DeletedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+	applicants.DeletedBy = modifiedby
+	applicants.IsDeleted = 1
+
+	err := Jobsmodel.MultiSelectedApplicantDelete(&applicants, applicantids, Ap.DB)
+
+	if err != nil {
+
+		return false, err
+	}
+
+	return true, nil
+}
+
+// multiselecte member status change
+func (Ap *Jobs) MultiSelectApplicantStatus(memberid []int, status int, modifiedby int) (bool, error) {
+
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
+
+		return false, AuthErr
+	}
+
+	var applicantstatus TblJobsApplicants
+
+	applicantstatus.ModifiedBy = modifiedby
+
+	applicantstatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	err := Jobsmodel.MultiApplicantIsActive(&applicantstatus, memberid, status, Ap.DB)
+
+	if err != nil {
+
+		return false, err
+	}
+
+	return true, nil
+
 }
