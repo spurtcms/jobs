@@ -1,9 +1,10 @@
 package jobs
 
 import (
-	"github.com/spurtcms/categories"
 	"strings"
 	"time"
+
+	"github.com/spurtcms/categories"
 
 	"gorm.io/gorm"
 )
@@ -222,7 +223,7 @@ func (jobsmodel JobsModel) MultiSelectedJobDelete(job *TblJobs, id []int, DB *go
 
 func (jobsmodel JobsModel) MultiJobsIsActive(job *TblJobs, jobid []int, status int, DB *gorm.DB) error {
 
-	if err := DB.Model(TblJobs{}).Where("id in (?)", jobid).UpdateColumns(map[string]interface{}{"status": job.Status, "modified_by": job.ModifiedBy, "modified_on": job.ModifiedOn}).Error; err != nil {
+	if err := DB.Model(TblJobs{}).Where("id in (?)", jobid).UpdateColumns(map[string]interface{}{"status": status, "modified_by": job.ModifiedBy, "modified_on": job.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

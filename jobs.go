@@ -7,6 +7,21 @@ import (
 	"github.com/spurtcms/categories"
 )
 
+// JobsSetup used initialize Jobs configruation
+func JobsSetup(config Config) *Jobs {
+
+	// MigrateTables(config.DB)
+
+	return &Jobs{
+		AuthEnable:       config.AuthEnable,
+		Permissions:      config.Permissions,
+		PermissionEnable: config.PermissionEnable,
+		Auth:             config.Auth,
+		DB:               config.DB,
+	}
+
+}
+
 // Jobs List Function
 func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count int64, err error) {
 
@@ -22,8 +37,6 @@ func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count
 	var Job []TblJobs
 
 	for _, jobs := range joblist {
-
-		jobs.CreatedDate = jobs.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
 
 		child_page, _ := categories.Categorymodel.GetCategoryById(jobs.CategoriesId, Ap.DB)
 		var categorynames []categories.TblCategories
@@ -149,7 +162,7 @@ func (Ap *Jobs) GetJobById(id int) (job TblJobs, err error) {
 		jobdata.Enddate = jobdata.ValidThrough.Format(layout)
 
 	}
-	child_page, _ := categories.Categorymodel.GetCategoryById(job.CategoriesId, Ap.DB)
+	child_page, _ := categories.Categorymodel.GetCategoryById(jobdata.CategoriesId, Ap.DB)
 	var categorynames []categories.TblCategories
 
 	var flg int
@@ -206,7 +219,7 @@ func (Ap *Jobs) GetJobById(id int) (job TblJobs, err error) {
 
 //Update Function//
 
-func (Ap *Jobs) UpdateJob(Jc CreateJobReq, jobid int) error {
+func (Ap *Jobs) UpdateJob(Jc CreateJobReq) error {
 
 	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
@@ -215,7 +228,7 @@ func (Ap *Jobs) UpdateJob(Jc CreateJobReq, jobid int) error {
 
 	var Updatejob TblJobs
 
-	Updatejob.Id = jobid
+	Updatejob.Id = Jc.Id
 
 	Updatejob.JobTitle = Jc.JobTitle
 
@@ -335,43 +348,19 @@ func (Ap *Jobs) MultiSelectJobsStatus(memberid []int, status int, modifiedby int
 
 }
 
-func (Ap *Jobs) GetJobApplicant(id int, limit, offset int, filter Filter) (app []TblJobsApplicants, Totalapplicants int64, err error) {
+func (Ap *Jobs) GetJobApplicant(id int, limit, offset int, filter Filter) (app []TblJobs, Totalapplicants int64, err error) {
 
 	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
-		return []TblJobsApplicants{}, 0, AuthErr
+		return []TblJobs{}, 0, AuthErr
 	}
-
-	var applicantlist []TblJobsApplicants
 
 	applicant, _, err1 := Jobsmodel.GetJobApplicantByJobId(id, limit, offset, filter, Ap.DB)
 
 	_, totalcount, _ := Jobsmodel.GetJobApplicantByJobId(id, 0, 0, filter, Ap.DB)
 
-	for _, applicants := range applicant {
-
-		for _, applicanvalue := range applicants.ApplicantsList {
-
-			log.Println("value.createdon", applicanvalue.CreatedOn)
-
-			applicanvalue.CreatedDate = applicanvalue.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			if !applicanvalue.ModifiedOn.IsZero() {
-
-				applicanvalue.CreatedDate = applicanvalue.ModifiedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			} else {
-				applicanvalue.CreatedDate = applicanvalue.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			}
-			applicantlist = append(applicantlist, applicanvalue)
-
-		}
-
-	}
-
 	if err1 != nil {
 		log.Println(err)
 	}
-	return applicantlist, totalcount, nil
+	return applicant, totalcount, nil
 }

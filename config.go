@@ -19,8 +19,8 @@ type Config struct {
 	PermissionEnable bool
 	DataBaseType     Type
 	Auth             *auth.Auth
+	Permissions      *role.PermissionConfig
 }
-
 
 type Jobs struct {
 	AuthEnable       bool
