@@ -25,16 +25,12 @@ func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count
 
 		jobs.CreatedDate = jobs.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
 
-		var child_page_Category categories.TblCategories
-
-		_, child_page := categories.GetChildPageCategoriess(&child_page_Category, jobs.CategoriesId, Ap.DB)
-
+		child_page, _ := categories.Categorymodel.GetCategoryById(jobs.CategoriesId, Ap.DB)
 		var categorynames []categories.TblCategories
 
 		var flg int
 
 		categorynames = append(categorynames, child_page)
-
 		flg = child_page.ParentId
 
 		var count int
@@ -46,28 +42,20 @@ func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count
 			for {
 
 				count++
-
 				if count >= 50 { // for safe
-
 					break //for safe
 				}
 
-				var newchildcategory categories.TblCategories
-
-				_, child := categories.GetChildPageCategoriess(&newchildcategory, flg, Ap.DB)
-
+				child, _ := categories.Categorymodel.GetCategoryById(flg, Ap.DB)
 				flg = child.ParentId
 
 				if flg != 0 {
 
 					categorynames = append(categorynames, child)
-
 					goto CLOOP
-
 				} else {
 
 					categorynames = append(categorynames, child)
-
 					break
 				}
 
@@ -76,9 +64,7 @@ func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count
 		}
 
 		var reverseCategoryOrder []categories.TblCategories
-
 		for i := len(categorynames) - 1; i >= 0; i-- {
-
 			reverseCategoryOrder = append(reverseCategoryOrder, categorynames[i])
 
 		}
@@ -163,16 +149,12 @@ func (Ap *Jobs) GetJobById(id int) (job TblJobs, err error) {
 		jobdata.Enddate = jobdata.ValidThrough.Format(layout)
 
 	}
-	var child_page_Category categories.TblCategories
-
-	_, child_page := categories.GetChildPageCategoriess(&child_page_Category, jobdata.CategoriesId, Ap.DB)
-
+	child_page, _ := categories.Categorymodel.GetCategoryById(job.CategoriesId, Ap.DB)
 	var categorynames []categories.TblCategories
 
 	var flg int
 
 	categorynames = append(categorynames, child_page)
-
 	flg = child_page.ParentId
 
 	var count int
@@ -184,28 +166,20 @@ func (Ap *Jobs) GetJobById(id int) (job TblJobs, err error) {
 		for {
 
 			count++
-
 			if count >= 50 { // for safe
-
 				break //for safe
 			}
 
-			var newchildcategory categories.TblCategories
-
-			_, child := categories.GetChildPageCategoriess(&newchildcategory, flg, Ap.DB)
-
+			child, _ := categories.Categorymodel.GetCategoryById(flg, Ap.DB)
 			flg = child.ParentId
 
 			if flg != 0 {
 
 				categorynames = append(categorynames, child)
-
 				goto CLOOP
-
 			} else {
 
 				categorynames = append(categorynames, child)
-
 				break
 			}
 
@@ -214,9 +188,7 @@ func (Ap *Jobs) GetJobById(id int) (job TblJobs, err error) {
 	}
 
 	var reverseCategoryOrder []categories.TblCategories
-
 	for i := len(categorynames) - 1; i >= 0; i-- {
-
 		reverseCategoryOrder = append(reverseCategoryOrder, categorynames[i])
 
 	}
