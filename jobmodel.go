@@ -44,6 +44,7 @@ type Filter struct {
 	JobTitle       string
 	ApplicantName  string
 	ApplicantEmail string
+	Experience     int
 }
 type TblJobs struct {
 	Id             int                        `gorm:"primaryKey;auto_increment;type:serial"`

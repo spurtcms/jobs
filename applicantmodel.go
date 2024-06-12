@@ -27,19 +27,19 @@ func (jobsmodel JobsModel) ApplicantsList(limit int, offset int, filter Filter, 
 
 		} else {
 
-			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 	}
 
-	if filter.ApplicantName != "" {
+	if filter.JobType != "" {
 
-		query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))", "%"+filter.ApplicantName+"%")
+		query = query.Debug().Where("tbl_jobs_applicants.job_type=?", filter.JobType)
 	}
 
-	if filter.ApplicantEmail != "" {
+	if filter.Experience != 0 {
 
-		query = query.Debug().Where("LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?))", "%"+filter.ApplicantEmail+"%")
+		query = query.Debug().Where("tbl_jobs_applicants.experience=?", filter.Experience)
 	}
 
 	if filter.Status == "InActive" {
@@ -98,7 +98,7 @@ func (jobsmodel JobsModel) GetApplicantById(id int, DB *gorm.DB) (applicant TblJ
 
 func (jobsmodel JobsModel) ApplicantUpdate(applicant *TblJobsApplicants, DB *gorm.DB) error {
 
-	query := DB.Model(TblJobsApplicants{}).Where("id=?", applicant.MemberId)
+	query := DB.Model(TblJobsApplicants{}).Where("member_id=?", applicant.MemberId)
 
 	if applicant.Image == "" && applicant.ImagePath == "" && applicant.Password == "" {
 
@@ -148,7 +148,7 @@ func (jobmodel JobsModel) GetApplicantJobs(applicantid int, limit int, offset in
 
 func (jobsmodel JobsModel) MultiSelectedApplicantDelete(applicant *TblJobsApplicants, id []int, DB *gorm.DB) error {
 
-	if err := DB.Model(TblJobsApplicants{}).Where("id in (?)", id).UpdateColumns(map[string]interface{}{"is_deleted": applicant.IsDeleted, "deleted_on": applicant.DeletedOn, "deleted_by": applicant.DeletedBy}).Error; err != nil {
+	if err := DB.Model(TblJobsApplicants{}).Where("member_id in (?)", id).UpdateColumns(map[string]interface{}{"is_deleted": applicant.IsDeleted, "deleted_on": applicant.DeletedOn, "deleted_by": applicant.DeletedBy}).Error; err != nil {
 
 		return err
 
@@ -161,7 +161,7 @@ func (jobsmodel JobsModel) MultiSelectedApplicantDelete(applicant *TblJobsApplic
 
 func (jobsmodel JobsModel) MultiApplicantIsActive(applicant *TblJobsApplicants, jobid []int, status int, DB *gorm.DB) error {
 
-	if err := DB.Model(TblJobsApplicants{}).Where("id in (?)", jobid).UpdateColumns(map[string]interface{}{"status": applicant.Status, "modified_by": applicant.ModifiedBy, "modified_on": applicant.ModifiedOn}).Error; err != nil {
+	if err := DB.Model(TblJobsApplicants{}).Where("member_id in (?)", jobid).UpdateColumns(map[string]interface{}{"status": status, "modified_by": applicant.ModifiedBy, "modified_on": applicant.ModifiedOn}).Error; err != nil {
 
 		return err
 	}

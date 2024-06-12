@@ -5,9 +5,6 @@ import (
 	"log"
 	"strings"
 	"time"
-
-	"github.com/spurtcms/member"
-	"gorm.io/gorm"
 )
 
 type TblJobsApplicants struct {
@@ -66,11 +63,6 @@ type CreateApplicantReq struct {
 
 // Member package connection
 
-func (Ap *Jobs) DBconf() *member.Member {
-	var memberconfig = member.MemberSetup(member.Config{DB: Ap.DB, AuthEnable: Ap.AuthEnable, PermissionEnable: Ap.PermissionEnable})
-	return memberconfig
-}
-
 // Applicant List Function//
 func (Ap *Jobs) ApplicantsList(limit, offset int, filter Filter) (applicants []TblJobsApplicants, count int64, err error) {
 
@@ -88,17 +80,6 @@ func (Ap *Jobs) ApplicantsList(limit, offset int, filter Filter) (applicants []T
 	for _, applicants := range Applicantlist {
 
 		var firstn = strings.ToUpper(applicants.Name[:1])
-
-		applicants.CreatedDate = applicants.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-		if !applicants.ModifiedOn.IsZero() {
-
-			applicants.CreatedDate = applicants.ModifiedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-		} else {
-			applicants.CreatedDate = applicants.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-		}
 
 		applicants.NameString = firstn
 
@@ -118,34 +99,9 @@ func (Ap *Jobs) CreateApplicant(ap CreateApplicantReq) error {
 		return AuthErr
 	}
 
-	db := Ap.DBconf()
-
-	amember, err := db.CreateMember(member.MemberCreationUpdation{
-
-		FirstName: ap.Name,
-
-		Email: ap.EmailId,
-
-		MobileNo: ap.MobileNo,
-
-		ProfileImage: ap.Image,
-
-		ProfileImagePath: ap.ImagePath,
-
-		IsActive: 1,
-
-		Password: ap.Password,
-
-		CreatedBy: ap.CreatedBy,
-	})
-
-	if err != nil {
-		log.Println(err)
-	}
-
 	var applicant TblJobsApplicants
 
-	applicant.MemberId = amember.Id
+	applicant.MemberId = ap.MemberId
 
 	applicant.Name = ap.Name
 
@@ -154,8 +110,6 @@ func (Ap *Jobs) CreateApplicant(ap CreateApplicantReq) error {
 	applicant.MobileNo = ap.MobileNo
 
 	applicant.JobType = ap.JobType
-
-	applicant.Password = ap.Password
 
 	applicant.Location = ap.Location
 
@@ -180,6 +134,11 @@ func (Ap *Jobs) CreateApplicant(ap CreateApplicantReq) error {
 	applicant.CreatedBy = ap.CreatedBy
 
 	applicant.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
+
+	if ap.Password != "" {
+		hash_pass := HashingPassword(ap.Password)
+		applicant.Password = hash_pass
+	}
 
 	err1 := Jobsmodel.ApplicantCreate(applicant, Ap.DB)
 
@@ -223,31 +182,6 @@ func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
 		return AuthErr
 	}
 
-	db := Ap.DBconf()
-
-	err := db.UpdateMember(member.MemberCreationUpdation{
-
-		FirstName: ap.Name,
-
-		Email: ap.EmailId,
-
-		MobileNo: ap.MobileNo,
-
-		ProfileImage: ap.Image,
-
-		ProfileImagePath: ap.ImagePath,
-
-		IsActive: 1,
-
-		Password: ap.Password,
-
-		ModifiedBy: ap.ModifiedBy,
-	}, memberid)
-
-	if err != nil {
-		log.Println(err)
-	}
-
 	var updateapplicant TblJobsApplicants
 
 	updateapplicant.MemberId = memberid
@@ -259,8 +193,6 @@ func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
 	updateapplicant.MobileNo = ap.MobileNo
 
 	updateapplicant.JobType = ap.JobType
-
-	updateapplicant.Password = ap.Password
 
 	updateapplicant.Location = ap.Location
 
@@ -286,6 +218,11 @@ func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
 
 	updateapplicant.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
+	if ap.Password != "" {
+		hash_pass := HashingPassword(ap.Password)
+		updateapplicant.Password = hash_pass
+	}
+
 	err1 := Jobsmodel.ApplicantUpdate(&updateapplicant, Ap.DB)
 
 	if err1 != nil {
@@ -298,21 +235,13 @@ func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
 
 //Function of Delete Applicant//
 
-func (Ap *Jobs) DeleteApplicant(memberid int, userid int, DB *gorm.DB) error {
+func (Ap *Jobs) DeleteApplicant(memberid int, userid int) error {
 
 	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
 		return AuthErr
 	}
 
-	db := Ap.DBconf()
-
-	err := db.DeleteMember(memberid, userid)
-
-	if err != nil {
-
-		return err
-	}
 	var applicant TblJobsApplicants
 
 	applicant.DeletedBy = userid
@@ -325,7 +254,7 @@ func (Ap *Jobs) DeleteApplicant(memberid int, userid int, DB *gorm.DB) error {
 
 	if err1 != nil {
 
-		return err
+		return err1
 	}
 
 	return nil
@@ -340,8 +269,6 @@ func (Ap *Jobs) GetApplicantJobs(ApplicantId int, limit int, offset int) (applic
 		return []TblJobs{}, 0, AuthErr
 	}
 
-	var jobslist []TblJobs
-
 	jobs, _, err1 := Jobsmodel.GetApplicantJobs(ApplicantId, limit, offset, Ap.DB)
 
 	if err1 != nil {
@@ -349,29 +276,9 @@ func (Ap *Jobs) GetApplicantJobs(ApplicantId int, limit int, offset int) (applic
 		log.Println(err1)
 	}
 
-	for _, Job := range jobs {
-
-		for _, val := range Job.JobList {
-
-			val.CreatedDate = val.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			if !val.ModifiedOn.IsZero() {
-
-				val.CreatedDate = val.ModifiedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			} else {
-				val.CreatedDate = val.CreatedOn.In(TZONE).Format("02 Jan 2006 03:04 PM")
-
-			}
-			jobslist = append(jobslist, val)
-
-		}
-
-	}
-
 	_, totalcount, _ := Jobsmodel.GetApplicantJobs(ApplicantId, 0, 0, Ap.DB)
 
-	return jobslist, totalcount, nil
+	return jobs, totalcount, nil
 }
 
 //Multiselect Job delete function//
@@ -387,11 +294,11 @@ func (Ap *Jobs) MultiSelectedApplicantDelete(applicantids []int, modifiedby int)
 	applicants.DeletedBy = modifiedby
 	applicants.IsDeleted = 1
 
-	err := Jobsmodel.MultiSelectedApplicantDelete(&applicants, applicantids, Ap.DB)
+	err1 := Jobsmodel.MultiSelectedApplicantDelete(&applicants, applicantids, Ap.DB)
 
-	if err != nil {
+	if err1 != nil {
 
-		return false, err
+		return false, err1
 	}
 
 	return true, nil
@@ -411,11 +318,11 @@ func (Ap *Jobs) MultiSelectApplicantStatus(memberid []int, status int, modifiedb
 
 	applicantstatus.ModifiedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
-	err := Jobsmodel.MultiApplicantIsActive(&applicantstatus, memberid, status, Ap.DB)
+	err1 := Jobsmodel.MultiApplicantIsActive(&applicantstatus, memberid, status, Ap.DB)
 
-	if err != nil {
+	if err1 != nil {
 
-		return false, err
+		return false, err1
 	}
 
 	return true, nil
