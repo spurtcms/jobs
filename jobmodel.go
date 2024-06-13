@@ -32,7 +32,10 @@ type CreateJobReq struct {
 	Status         int
 	ModifiedBy     int
 }
-
+type JobsListReq struct {
+	Limit  int
+	Offset int
+}
 type Filter struct {
 	Keyword        string
 	JobType        string
@@ -257,19 +260,19 @@ func (jobsmodel JobsModel) GetJobApplicantByJobId(id int, limit int, offset int,
 
 		} else {
 
-			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 	}
 
-	if filter.ApplicantName != "" {
+	if filter.JobType != "" {
 
-		query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))", "%"+filter.ApplicantName+"%")
+		query = query.Where("tbl_jobs_applicants.job_type=?", filter.JobType)
 	}
 
-	if filter.ApplicantEmail != "" {
+	if filter.Experience != 0 {
 
-		query = query.Debug().Where("LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?))", "%"+filter.ApplicantEmail+"%")
+		query = query.Where("tbl_jobs_applicants.experience=?", filter.Experience)
 	}
 
 	if filter.Status == "InActive" {

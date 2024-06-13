@@ -1,6 +1,6 @@
 package jobs
 
-import "C"
+
 import (
 	"log"
 	"strings"
@@ -35,6 +35,8 @@ type TblJobsApplicants struct {
 	Status         int    `gorm:"type:integer"`
 	NameString     string `gorm:"-:migration;<-:false"`
 	Password       string
+	ResumePath     string `gorm:"type:character varying"`
+	ResumeName     string `gorm:"type:character varying"`
 }
 
 type CreateApplicantReq struct {
