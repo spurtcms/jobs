@@ -27,7 +27,7 @@ func AuthandPermission(jobs *Jobs) error {
 		return ErrorAuth
 	}
 	//check permission enable if enabled, use team-role pkg otherwise it will return error
-	if jobs.PermissionEnable && !jobs.Permissions.PermissionFlg {
+	if jobs.PermissionEnable && !jobs.Auth.PermissionFlg {
 
 		return ErrorPermission
 

@@ -102,7 +102,7 @@ type TblJobsRegisters struct {
 	JobList        []TblJobs           `gorm:"foreignKey:Id;"`
 }
 
-func (jobsmodel JobsModel) JobsList(offset int, limit int, filter Filter, DB *gorm.DB) (job []TblJobs, Totaljob int64, err error) {
+func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *gorm.DB) (job []TblJobs, Totaljob int64, err error) {
 
 	if strings.ToLower(filter.Keyword) == "active" {
 

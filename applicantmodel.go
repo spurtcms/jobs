@@ -27,7 +27,7 @@ func (jobsmodel JobsModel) ApplicantsList(limit int, offset int, filter Filter, 
 
 		} else {
 
-			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) OR tbl_jobs_applicants.experience = ? ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", filter.Keyword)
 
 		}
 	}
