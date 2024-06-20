@@ -1,6 +1,5 @@
 package jobs
 
-
 import (
 	"log"
 	"strings"
@@ -264,11 +263,11 @@ func (Ap *Jobs) DeleteApplicant(memberid int, userid int) error {
 
 //Function of Getting Applicant Jobs//
 
-func (Ap *Jobs) GetApplicantJobs(ApplicantId int, limit int, offset int) (applicantjobs []TblJobs, Totaljobs int64, err error) {
+func (Ap *Jobs) GetApplicantJobs(ApplicantId int, limit int, offset int) (applicantjobs []TblJobsRegisters, Totaljobs int64, err error) {
 
 	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
-		return []TblJobs{}, 0, AuthErr
+		return []TblJobsRegisters{}, 0, AuthErr
 	}
 
 	jobs, _, err1 := Jobsmodel.GetApplicantJobs(ApplicantId, limit, offset, Ap.DB)

@@ -79,7 +79,7 @@ type TblJobs struct {
 	ModifiedOn     time.Time                  `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	ModifiedBy     int                        `gorm:"type:integer"`
 	CategoryNames  []categories.TblCategories `gorm:"-"`
-	JobList        []TblJobs                  `gorm:"foreignKey:Id;"`
+	JobList        []TblJobsRegisters         `gorm:"foreignKey:Id;"`
 }
 
 type TblJobsEducation struct {
@@ -100,6 +100,8 @@ type TblJobsRegisters struct {
 	CreatedOn      time.Time           `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
 	ApplicantsList []TblJobsApplicants `gorm:"foreignKey:Id;"`
 	JobList        []TblJobs           `gorm:"foreignKey:Id;"`
+	CreatedDate    string              `gorm:"-:migration;<-:false"`
+	Status         string              `gorm:"type:character varying"`
 }
 
 func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *gorm.DB) (job []TblJobs, Totaljob int64, err error) {
@@ -123,7 +125,7 @@ func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *go
 
 		} else {
 
-			query = query.Where("LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?))  ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where("LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) OR tbl_jobs.id=? ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", filter.Keyword)
 
 		}
 	}
@@ -260,7 +262,7 @@ func (jobsmodel JobsModel) GetJobApplicantByJobId(id int, limit int, offset int,
 
 		} else {
 
-			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(tbl_jobs_applicants.job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 	}

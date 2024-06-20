@@ -27,7 +27,7 @@ func (jobsmodel JobsModel) ApplicantsList(limit int, offset int, filter Filter, 
 
 		} else {
 
-			query = query.Debug().Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) OR tbl_jobs_applicants.experience = ? ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", filter.Keyword)
+			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 	}
@@ -125,11 +125,11 @@ func (jobmodel JobsModel) ApplicantDelete(applicant TblJobsApplicants, DB *gorm.
 
 //Applicant jobs get by applicantId//
 
-func (jobmodel JobsModel) GetApplicantJobs(applicantid int, limit int, offset int, DB *gorm.DB) (applicantjobs []TblJobs, Totaljobs int64, err error) {
+func (jobmodel JobsModel) GetApplicantJobs(applicantid int, limit int, offset int, DB *gorm.DB) (applicantjobs []TblJobsRegisters, Totaljobs int64, err error) {
 
 	query := DB.Debug().Preload("JobList", func(db *gorm.DB) *gorm.DB {
 		return db.Order("id asc")
-	}).Table("tbl_jobs_registers").Select("tbl_jobs.id").Joins("inner join tbl_jobs on tbl_jobs.id = tbl_jobs_registers.job_id").Joins("inner join tbl_jobs_applicants on tbl_jobs_applicants.id =tbl_jobs_registers.applicant_id").Where("tbl_jobs_registers.applicant_id = ?", applicantid).Find(&applicantjobs)
+	}).Table("tbl_jobs_registers").Select("tbl_jobs.id,tbl_jobs_registers.created_on,tbl_jobs_registers.status").Joins("inner join tbl_jobs on tbl_jobs.id = tbl_jobs_registers.job_id").Joins("inner join tbl_jobs_applicants on tbl_jobs_applicants.id =tbl_jobs_registers.applicant_id").Where("tbl_jobs_registers.applicant_id = ?", applicantid).Find(&applicantjobs)
 
 	if limit != 0 {
 
