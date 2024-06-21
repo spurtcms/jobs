@@ -364,3 +364,22 @@ func (Ap *Jobs) GetJobApplicant(id int, limit, offset int, filter Filter) (app [
 	}
 	return applicant, totalcount, nil
 }
+
+func (Ap *Jobs) ChangeApplicantStatus(jobid int, applicantid int, status string)error{
+
+	if AuthErr :=AuthandPermission(Ap); AuthErr != nil {
+
+		return AuthErr
+
+	}
+
+	 err :=Jobsmodel.ChangeApplicantStatus(jobid,applicantid,status,Ap.DB)
+
+	 if err !=nil{
+
+		log.Println(err)
+	 }
+
+	 return nil
+
+}

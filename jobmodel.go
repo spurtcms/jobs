@@ -80,6 +80,7 @@ type TblJobs struct {
 	ModifiedBy     int                        `gorm:"type:integer"`
 	CategoryNames  []categories.TblCategories `gorm:"-"`
 	JobList        []TblJobsRegisters         `gorm:"foreignKey:Id;"`
+	Jobregstatus   string                     `gorm:"-:migration;<-:false"`
 }
 
 type TblJobsEducation struct {
@@ -125,9 +126,10 @@ func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *go
 
 		} else {
 
-			query = query.Where("LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) OR tbl_jobs.id=? ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", filter.Keyword)
+			query = query.Where(" LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
+
 	}
 
 	if filter.JobType != "" {
@@ -252,7 +254,7 @@ func (jobsmodel JobsModel) GetJobApplicantByJobId(id int, limit int, offset int,
 
 	query := DB.Debug().Preload("ApplicantsList", func(db *gorm.DB) *gorm.DB {
 		return db.Order("id asc")
-	}).Table("tbl_jobs_registers").Select("tbl_jobs_applicants.id").Joins("inner join tbl_jobs on tbl_jobs.id = tbl_jobs_registers.job_id").Joins("inner join tbl_jobs_applicants on tbl_jobs_applicants.id =tbl_jobs_registers.applicant_id").Where("tbl_jobs.id = ?", id).Find(&applicant)
+	}).Table("tbl_jobs_registers").Select("tbl_jobs_applicants.id,tbl_jobs_registers.status as Jobregstatus ").Joins("inner join tbl_jobs on tbl_jobs.id = tbl_jobs_registers.job_id").Joins("inner join tbl_jobs_applicants on tbl_jobs_applicants.id =tbl_jobs_registers.applicant_id").Where("tbl_jobs.id = ?", id).Order("tbl_jobs_applicants.id desc").Find(&applicant)
 
 	if filter.Keyword != "" {
 
@@ -303,4 +305,14 @@ func (jobsmodel JobsModel) GetJobApplicantByJobId(id int, limit int, offset int,
 	query.Find(&applicant).Count(&Totalapplicants)
 
 	return applicant, Totalapplicants, nil
+}
+
+func (jobsmodel JobsModel) ChangeApplicantStatus(jobid int, applicantid int, status string, DB *gorm.DB) error {
+
+	if err := DB.Model(TblJobsRegisters{}).Where("job_id=? And applicant_id=?", jobid, applicantid).UpdateColumns(map[string]interface{}{"status": status}).Error; err != nil {
+
+		return err
+	}
+
+	return nil
 }
