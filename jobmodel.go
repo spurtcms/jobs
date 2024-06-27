@@ -44,14 +44,24 @@ type Filter struct {
 	MobileNo       string
 	JobId          int
 	Status         string
-	JobTitle       string
 	ApplicantName  string
 	ApplicantEmail string
 	Experience     int
+	JobTitle       string
+	JobLocation    string
+	CategoryId     int
+	CategorySlug   string
+	KeyWord        string
+	MinimumYears   int
+	MaximumYears   int
+	DatePosted     string
+	Skill          string
 }
+
 type TblJobs struct {
 	Id             int                        `gorm:"primaryKey;auto_increment;type:serial"`
 	CategoriesId   int                        `gorm:"type:integer"`
+	Category       categories.TblCategories   `json:"category,omitempty" gorm:"foreignKey:CategoriesID;references:ID"`
 	JobTitle       string                     `gorm:"type:character varying"`
 	JobDescription string                     `gorm:"type:character varying"`
 	JobLocation    string                     `gorm:"type:character varying"`
@@ -315,4 +325,161 @@ func (jobsmodel JobsModel) ChangeApplicantStatus(jobid int, applicantid int, sta
 	}
 
 	return nil
+}
+func (jobsModel JobsModel) GetJobsList(limit int, offset int, filter Filter, DB *gorm.DB) (jobsList []TblJobs, count int64, err error) {
+
+	listQuery := DB.Debug().Table("tbl_jobs").Select("tbl_jobs.*,tbl_categories.id as CatId,tbl_categories.category_name,tbl_categories.category_slug").Joins("inner join tbl_categories on tbl_jobs.categories_id = tbl_categories.id").Where("tbl_jobs.is_deleted = 0 AND tbl_jobs.status = 1").Preload("Category")
+
+	if filter.JobTitle != "" {
+
+		listQuery = listQuery.Where("job_title = ?", filter.JobTitle)
+	}
+
+	if filter.KeyWord != "" {
+
+		listQuery = listQuery.Where("LOWER(TRIM(job_title)) like LOWER(TRIM(?))", "%"+filter.KeyWord+"%")
+	}
+
+	if filter.JobLocation != "" {
+
+		listQuery = listQuery.Where("job_location = ?", filter.JobLocation)
+	}
+
+	if filter.CategorySlug != "" {
+
+		listQuery = listQuery.Where("tbl_categories.category_slug = ?", filter.CategorySlug)
+	}
+
+	if filter.CategoryId != 0 {
+
+		listQuery = listQuery.Where("categories_id = ?", filter.CategoryId)
+	}
+
+	if filter.Skill != "" {
+		listQuery = listQuery.Where("skill = ?", filter.Skill)
+	}
+
+	if filter.MinimumYears != 0 && filter.MaximumYears != 0 {
+
+		listQuery = listQuery.Where("minimum_years >= ? and maximum_years <= ?", filter.MinimumYears, filter.MaximumYears)
+
+	} else if filter.MinimumYears != 0 {
+
+		listQuery = listQuery.Where("minimum_years >= ?", filter.MinimumYears)
+
+	} else if filter.MaximumYears != 0 {
+
+		listQuery = listQuery.Where("maximum_years <= ?", filter.MaximumYears)
+	}
+
+	if filter.DatePosted != "" {
+
+		var startDate, endDate time.Time
+
+		var currentDate = time.Now().Local()
+
+		if filter.DatePosted == "This Week" {
+
+			currentDay := time.Now().Local().Weekday().String()
+
+			switch currentDay {
+
+			case "Monday":
+				startDate = currentDate
+				endDate = currentDate.AddDate(0, 0, 6)
+
+			case "Tuesday":
+				startDate = currentDate.AddDate(0, 0, -1)
+				endDate = currentDate.AddDate(0, 0, 5)
+
+			case "Wednesday":
+				startDate = currentDate.AddDate(0, 0, -2)
+				endDate = currentDate.AddDate(0, 0, 4)
+
+			case "Thursday":
+				startDate = currentDate.AddDate(0, 0, -3)
+				endDate = currentDate.AddDate(0, 0, 3)
+
+			case "Friday":
+				startDate = currentDate.AddDate(0, 0, -4)
+				endDate = currentDate.AddDate(0, 0, 2)
+
+			case "Saturday":
+				startDate = currentDate.AddDate(0, 0, -5)
+				endDate = currentDate.AddDate(0, 0, 1)
+
+			case "Sunday":
+				startDate = currentDate.AddDate(0, 0, -6)
+				endDate = currentDate
+			}
+
+		}
+
+		if filter.DatePosted == "This Month" {
+
+			startDate = time.Date(currentDate.Year(), currentDate.Month(), 1, 0, 0, 0, 0, currentDate.Location())
+			firstDayOfNxtMnth := startDate.AddDate(0, 1, 0)
+			endDate = firstDayOfNxtMnth.Add(-time.Second)
+		}
+
+		if filter.DatePosted == "This Year" {
+
+			startDate = time.Date(currentDate.Year(), time.January, 1, 0, 0, 0, 0, currentDate.Location())
+			startofNxtYear := startDate.AddDate(1, 0, 0)
+			endDate = startofNxtYear.Add(-time.Second)
+		}
+
+		if filter.DatePosted == "Today" {
+
+			startDate = time.Date(currentDate.Year(), currentDate.Month(), currentDate.Day(), 0, 0, 0, 0, currentDate.Location())
+			nxtDay := startDate.AddDate(0, 0, 1)
+			endDate = nxtDay.Add(-time.Second)
+		}
+
+		listQuery = listQuery.Where("posted_date between (?) and (?)", startDate, endDate)
+
+	}
+
+	listQuery = listQuery.Limit(limit).Offset(offset).Order("tbl_jobs.id desc").Find(&jobsList)
+
+	if listQuery.Error != nil {
+		return []TblJobs{}, -1, listQuery.Error
+
+	}
+
+	if len(jobsList) <= 0 {
+		return []TblJobs{}, -1, gorm.ErrRecordNotFound
+
+	}
+
+	countQuery := listQuery.Count(&count)
+
+	if countQuery.Error != nil {
+
+		return []TblJobs{}, -1, countQuery.Error
+	}
+
+	return jobsList, count, nil
+}
+
+func (jobsModel JobsModel) GetJobDetails(id int, jobSlug string, DB *gorm.DB) (jobDetail TblJobs, err error) {
+
+	query := DB.Debug().Table("tbl_jobs").Select("tbl_jobs.*,tbl_categories.id as CatId,tbl_categories.category_name,tbl_categories.category_slug").Joins("inner join tbl_categories on tbl_jobs.categories_id = tbl_categories.id").Where("tbl_jobs.is_deleted = 0").Preload("Category")
+
+	if id != 0 && id != -1 {
+
+		query = query.Where("tbl_jobs.id = ?", id)
+	} else if jobSlug != "" {
+
+		query = query.Where("tbl_jobs.job_slug = ? ", jobSlug)
+	}
+
+	query = query.Find(&jobDetail)
+
+	if query.Error != nil {
+
+		return TblJobs{}, err
+	}
+
+	return jobDetail, nil
 }

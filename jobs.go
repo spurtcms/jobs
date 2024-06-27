@@ -383,3 +383,34 @@ func (Ap *Jobs) ChangeApplicantStatus(jobid int, applicantid int, status string)
 	 return nil
 
 }
+
+func (jobs *Jobs) GetJobsList(limit int, offset int, filter Filter) (jobsList []TblJobs, count int64, err error) {
+
+	if AuthErr := AuthandPermission(jobs); AuthErr != nil {
+		return []TblJobs{}, -1, AuthErr
+	}
+
+	jobsList, count, err = JobsModel.GetJobsList(JobsModel{}, limit, offset, filter, jobs.DB)
+	if err != nil {
+
+		return []TblJobs{}, -1, err
+	}
+
+	return jobsList, count, nil
+}
+
+
+func (jobs *Jobs) GetJobDetails(id int, jobSlug string) (jobDetail TblJobs, err error) {
+
+	if AuthErr := AuthandPermission(jobs); AuthErr != nil {
+		return TblJobs{}, AuthErr
+	}
+
+	jobDetail, err = JobsModel.GetJobDetails(JobsModel{}, id, jobSlug, jobs.DB)
+	if err != nil {
+
+		return TblJobs{}, err
+	}
+
+	return jobDetail, nil
+}
