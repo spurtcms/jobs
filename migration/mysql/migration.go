@@ -30,6 +30,7 @@ type TblJobsApplicants struct {
 	IsDeleted   int       `gorm:"type:int"`
 	DeletedOn   time.Time `gorm:"type:timestamp;DEFAULT:NULL"`
 	DeletedBy   int       `gorm:"type:int"`
+	StorageType string     `gorm:"type:varchar (255)"`
 }
 
 type TblJobs struct {

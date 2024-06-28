@@ -37,6 +37,7 @@ type TblJobsApplicants struct {
 	ResumePath     string `gorm:"type:character varying"`
 	ResumeName     string `gorm:"type:character varying"`
 	Jobregstatus   string `gorm:"-:migration;<-:false"`
+	StorageType    string `gorm:"type:character varying"`
 }
 
 type CreateApplicantReq struct {

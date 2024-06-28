@@ -61,7 +61,7 @@ type Filter struct {
 type TblJobs struct {
 	Id             int                        `gorm:"primaryKey;auto_increment;type:serial"`
 	CategoriesId   int                        `gorm:"type:integer"`
-	Category       categories.TblCategories   `json:"category,omitempty" gorm:"foreignKey:CategoriesID;references:ID"`
+	Category       categories.TblCategories   `gorm:"foreignKey:Id;"`
 	JobTitle       string                     `gorm:"type:character varying"`
 	JobDescription string                     `gorm:"type:character varying"`
 	JobLocation    string                     `gorm:"type:character varying"`
@@ -91,6 +91,7 @@ type TblJobs struct {
 	CategoryNames  []categories.TblCategories `gorm:"-"`
 	JobList        []TblJobsRegisters         `gorm:"foreignKey:Id;"`
 	Jobregstatus   string                     `gorm:"-:migration;<-:false"`
+	JobSlug        string                     `gorm:"type:character varying"`
 }
 
 type TblJobsEducation struct {

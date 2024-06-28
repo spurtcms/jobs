@@ -4,6 +4,7 @@ import (
 	"log"
 	"strconv"
 	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -33,6 +34,7 @@ type TblJobsApplicants struct {
 	CurrentSalary  int       `gorm:"type:integer"`
 	ExpectedSalary int       `gorm:"type:integer"`
 	Status         int       `gorm:"type:integer"`
+	StorageType    string    `gorm:"type:character varying"`
 }
 
 type TblJobs struct {
