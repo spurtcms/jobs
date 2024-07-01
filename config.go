@@ -30,4 +30,7 @@ type Jobs struct {
 	DB               *gorm.DB
 	Auth             *auth.Auth
 	Permissions      *role.PermissionConfig
+	DataBaseType     Type
+	Userid           int
+	Dataaccess       int
 }

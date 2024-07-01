@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/spurtcms/categories"
+	"github.com/spurtcms/jobs/migration"
 )
 
 // JobsSetup used initialize Jobs configruation
 func JobsSetup(config Config) *Jobs {
 
-	// MigrateTables(config.DB)
+	migration.AutoMigration(config.DB, config.DataBaseType)
 
 	return &Jobs{
 		AuthEnable:       config.AuthEnable,
@@ -18,6 +19,7 @@ func JobsSetup(config Config) *Jobs {
 		PermissionEnable: config.PermissionEnable,
 		Auth:             config.Auth,
 		DB:               config.DB,
+		DataBaseType:     config.DataBaseType,
 	}
 
 }
@@ -29,6 +31,10 @@ func (Ap *Jobs) JobsList(limit, offset int, filter Filter) (job []TblJobs, count
 
 		return []TblJobs{}, 0, AuthErr
 	}
+
+	Jobsmodel.Dataaccess = Ap.Dataaccess
+
+	Jobsmodel.Userid = Ap.Userid
 
 	joblist, _, _ := Jobsmodel.JobsList(limit, offset, filter, Ap.DB)
 
@@ -365,22 +371,22 @@ func (Ap *Jobs) GetJobApplicant(id int, limit, offset int, filter Filter) (app [
 	return applicant, totalcount, nil
 }
 
-func (Ap *Jobs) ChangeApplicantStatus(jobid int, applicantid int, status string)error{
+func (Ap *Jobs) ChangeApplicantStatus(jobid int, applicantid int, status string) error {
 
-	if AuthErr :=AuthandPermission(Ap); AuthErr != nil {
+	if AuthErr := AuthandPermission(Ap); AuthErr != nil {
 
 		return AuthErr
 
 	}
 
-	 err :=Jobsmodel.ChangeApplicantStatus(jobid,applicantid,status,Ap.DB)
+	err := Jobsmodel.ChangeApplicantStatus(jobid, applicantid, status, Ap.DB)
 
-	 if err !=nil{
+	if err != nil {
 
 		log.Println(err)
-	 }
+	}
 
-	 return nil
+	return nil
 
 }
 

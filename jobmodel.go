@@ -129,6 +129,11 @@ func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *go
 
 	query := DB.Debug().Table("tbl_jobs").Where("is_deleted = 0").Order("id desc")
 
+	if jobsmodel.Dataaccess == 1 {
+
+		query = query.Where("tbl_jobs.created_by=?", jobsmodel.Userid)
+	}
+
 	if filter.Keyword != "" {
 
 		if filter.Keyword == "0" || filter.Keyword == "1" {

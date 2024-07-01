@@ -15,7 +15,10 @@ var (
 	TZONE, _        = time.LoadLocation(os.Getenv("TIME_ZONE"))
 )
 
-type JobsModel struct{}
+type JobsModel struct {
+	Dataaccess int
+	Userid     int
+}
 
 var Jobsmodel JobsModel
 

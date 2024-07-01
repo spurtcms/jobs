@@ -74,6 +74,10 @@ func (Ap *Jobs) ApplicantsList(limit, offset int, filter Filter) (applicants []T
 		return []TblJobsApplicants{}, 0, AuthErr
 	}
 
+	Jobsmodel.Dataaccess = Ap.Dataaccess
+
+	Jobsmodel.Userid = Ap.Userid
+
 	Applicantlist, _, _ := Jobsmodel.ApplicantsList(limit, offset, filter, Ap.DB)
 
 	_, totalcount, _ := Jobsmodel.ApplicantsList(0, 0, filter, Ap.DB)

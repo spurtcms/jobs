@@ -19,6 +19,11 @@ func (jobsmodel JobsModel) ApplicantsList(limit int, offset int, filter Filter, 
 
 	query := DB.Debug().Table("tbl_jobs_applicants").Where("is_deleted = 0").Order("id desc")
 
+	if jobsmodel.Dataaccess == 1 {
+
+		query = query.Where("tbl_jobs_applicants.created_by=?", jobsmodel.Userid)
+	}
+
 	if filter.Keyword != "" {
 
 		if filter.Keyword == "0" || filter.Keyword == "1" {
@@ -27,14 +32,9 @@ func (jobsmodel JobsModel) ApplicantsList(limit int, offset int, filter Filter, 
 
 		} else {
 
-			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?)) or tbl_jobs_applicants.experience=? ", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", filter.Keyword)
 
 		}
-	}
-
-	if filter.JobType != "" {
-
-		query = query.Debug().Where("tbl_jobs_applicants.job_type=?", filter.JobType)
 	}
 
 	if filter.Experience != 0 {
