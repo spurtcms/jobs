@@ -76,12 +76,36 @@ type TblJobsDepartment struct {
 }
 
 type TblJobsRegisters struct {
-	Id          int `gorm:"primaryKey;auto_increment;type:serial"`
-	JobId       int
-	ApplicantId int
-	CreatedBy   int       `gorm:"type:integer"`
-	CreatedOn   time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	Id             int `gorm:"primaryKey;auto_increment;type:serial"`
+	JobId          int  `gorm:"type:integer"`
+	ApplicantId    int  `gorm:"type:integer"`
+	Name           string    `gorm:"type:character varying"`
+	EmailId        string    `gorm:"type:character varying"`
+	MobileNo       string    `gorm:"type:character varying"`
+	JobType        string    `gorm:"type:character varying"`
+	Location       string    `gorm:"type:character varying"`
+	Education      string    `gorm:"type:character varying"`
+	Graduation     int       `gorm:"type:integer"`
+	CompanyName    string    `gorm:"type:character varying"`
+	Experience     int       `gorm:"type:integer"`
+	Skills         string    `gorm:"type:character varying"`
+	ImagePath      string    `gorm:"type:character varying"`
+	Image          string    `gorm:"type:character varying"`
+	CreatedBy      int       `gorm:"type:integer"`
+	CreatedOn      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	ModifiedOn     time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	ModifiedBy     int       `gorm:"type:integer"`
+	IsDeleted      int       `gorm:"type:integer"`
+	DeletedOn      time.Time `gorm:"type:timestamp without time zone;DEFAULT:NULL"`
+	DeletedBy      int       `gorm:"type:integer"`
+	CurrentSalary  int       `gorm:"type:integer"`
+	ExpectedSalary int       `gorm:"type:integer"`
+	Status         string    `gorm:"type:character varying"`
+	ResumePath     string    `gorm:"type:character varying"`
+	ResumeName     string    `gorm:"type:character varying"`
+	StorageType    string    `gorm:"type:character varying"`
 }
+
 
 func MigrationTables(db *gorm.DB) {
 

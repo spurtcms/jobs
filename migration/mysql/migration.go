@@ -4,6 +4,7 @@ import (
 	"log"
 	"strconv"
 	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -30,7 +31,7 @@ type TblJobsApplicants struct {
 	IsDeleted   int       `gorm:"type:int"`
 	DeletedOn   time.Time `gorm:"type:timestamp;DEFAULT:NULL"`
 	DeletedBy   int       `gorm:"type:int"`
-	StorageType string     `gorm:"type:varchar (255)"`
+	StorageType string    `gorm:"type:varchar (255)"`
 }
 
 type TblJobs struct {
@@ -75,8 +76,28 @@ type TblJobsRegisters struct {
 	Id          int               `gorm:"primaryKey;auto_increment;type:int"`
 	JobId       TblJobsApplicants `gorm:"type:int;foreignKey:Id"`
 	ApplicantId int               `gorm:"type:int"`
+	Name        string            `gorm:"type:varchar (255)"`
+	EmailId     string            `gorm:"type:varchar (255)"`
+	MobileNo    string            `gorm:"type:varchar (255)"`
+	JobType     string            `gorm:"type:varchar (255)"`
+	Password    string            `gorm:"type:varchar(255)"`
+	Location    string            `gorm:"type:varchar (255)"`
+	Education   string            `gorm:"type:varchar (255)"`
+	Graduation  int               `gorm:"type:int"`
+	CompanyName string            `gorm:"type:varchar (255)"`
+	Experience  string            `gorm:"type:varchar (255)"`
+	Skills      string            `gorm:"type:varchar (255)"`
+	ImagePath   string            `gorm:"type:varchar (255)"`
+	Image       string            `gorm:"type:varchar (255)"`
 	CreatedBy   int               `gorm:"type:int"`
 	CreatedOn   time.Time         `gorm:"type:timestamp;DEFAULT:NULL"`
+	ModifiedOn  time.Time         `gorm:"type:timestamp;DEFAULT:NULL"`
+	ModifiedBy  int               `gorm:"type:int"`
+	IsDeleted   int               `gorm:"type:int"`
+	DeletedOn   time.Time         `gorm:"type:timestamp;DEFAULT:NULL"`
+	DeletedBy   int               `gorm:"type:int"`
+	ResumePath  string            `gorm:"type:varchar (255)"`
+	Status      string            `gorm:"type:varchar (255)"`
 }
 
 func MigrationTables(db *gorm.DB) {
