@@ -106,7 +106,7 @@ func (jobsmodel JobsModel) ApplicantUpdate(applicant *TblJobsApplicants, DB *gor
 
 	} else {
 
-		query.UpdateColumns(map[string]interface{}{"name": applicant.Name, "email_id": applicant.EmailId, "mobile_no": applicant.MobileNo, "job_type": applicant.JobType, "member_id": applicant.MemberId, "password": applicant.Password, "location": applicant.Location, "company_name": applicant.CompanyName, "experience": applicant.Experience, "education": applicant.Education, "graduation": applicant.Graduation, "skills": applicant.Skills, "current_salary": applicant.CurrentSalary, "expected_salary": applicant.ExpectedSalary, "status": applicant.Status, "modified_on": applicant.ModifiedOn, "image": applicant.Image, "image_path": applicant.ImagePath})
+		query.UpdateColumns(map[string]interface{}{"name": applicant.Name, "email_id": applicant.EmailId, "mobile_no": applicant.MobileNo, "job_type": applicant.JobType, "member_id": applicant.MemberId, "password": applicant.Password, "location": applicant.Location, "company_name": applicant.CompanyName, "experience": applicant.Experience, "education": applicant.Education, "graduation": applicant.Graduation, "skills": applicant.Skills, "current_salary": applicant.CurrentSalary, "expected_salary": applicant.ExpectedSalary, "status": applicant.Status, "modified_on": applicant.ModifiedOn, "image": applicant.Image, "image_path": applicant.ImagePath, "storage_type": applicant.StorageType})
 	}
 
 	return nil

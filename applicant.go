@@ -62,9 +62,9 @@ type CreateApplicantReq struct {
 	ExpectedSalary int
 	Status         int
 	Password       string
+	StorageType    string
 }
 
-// Member package connection
 
 // Applicant List Function//
 func (Ap *Jobs) ApplicantsList(limit, offset int, filter Filter) (applicants []TblJobsApplicants, count int64, err error) {
@@ -139,6 +139,8 @@ func (Ap *Jobs) CreateApplicant(ap CreateApplicantReq) error {
 	applicant.Status = ap.Status
 
 	applicant.CreatedBy = ap.CreatedBy
+
+	applicant.StorageType = ap.StorageType
 
 	applicant.CreatedOn, _ = time.Parse("2006-01-02 15:04:05", time.Now().UTC().Format("2006-01-02 15:04:05"))
 
@@ -220,6 +222,8 @@ func (Ap *Jobs) UpdateApplicant(ap CreateApplicantReq, memberid int) error {
 	updateapplicant.Image = ap.Image
 
 	updateapplicant.Status = ap.Status
+
+	updateapplicant.StorageType = ap.StorageType
 
 	updateapplicant.ModifiedBy = ap.ModifiedBy
 

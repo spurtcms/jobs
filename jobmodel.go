@@ -211,7 +211,7 @@ func (jobsmodel JobsModel) JobDetailsById(jobs *TblJobs, id int, DB *gorm.DB) er
 
 func (jobsmodel JobsModel) JobUpdate(job *TblJobs, DB *gorm.DB) error {
 
-	if err := DB.Model(TblJobs{}).Where("id = ?", job.Id).UpdateColumns(map[string]interface{}{"job_title": job.JobTitle, "categories_id": job.CategoriesId, "job_type": job.JobType, "job_location": job.JobLocation, "job_description": job.JobDescription, "skill": job.Skill, "salary": job.Salary, "education": job.Education, "minimum_years": job.MinimumYears, "maximum_years": job.MaximumYears, "status": job.Status, "posted_date": job.PostedDate, "valid_through": job.ValidThrough, "keywords": job.Keywords, "modified_on": job.ModifiedOn, "modified_by": job.ModifiedBy}).Error; err != nil {
+	if err := DB.Model(TblJobs{}).Where("id = ?", job.Id).UpdateColumns(map[string]interface{}{"job_title": job.JobTitle, "categories_id": job.CategoriesId, "job_type": job.JobType, "job_location": job.JobLocation, "job_description": job.JobDescription, "skill": job.Skill, "salary": job.Salary, "education": job.Education, "minimum_years": job.MinimumYears, "maximum_years": job.MaximumYears, "status": job.Status, "posted_date": job.PostedDate, "valid_through": job.ValidThrough, "keywords": job.Keywords, "modified_on": job.ModifiedOn, "modified_by": job.ModifiedBy, "job_slug": job.JobSlug}).Error; err != nil {
 		return err
 	}
 

@@ -108,6 +108,8 @@ func (Ap *Jobs) CreateJob(Jc CreateJobReq) error {
 
 	job.JobTitle = Jc.JobTitle
 
+	job.JobSlug = Jc.JobSlug
+
 	job.CategoriesId = Jc.CategoriesId
 
 	job.JobType = Jc.JobType
@@ -237,6 +239,8 @@ func (Ap *Jobs) UpdateJob(Jc CreateJobReq) error {
 	Updatejob.Id = Jc.Id
 
 	Updatejob.JobTitle = Jc.JobTitle
+
+	Updatejob.JobSlug = Jc.JobSlug
 
 	Updatejob.CategoriesId = Jc.CategoriesId
 
@@ -404,7 +408,6 @@ func (jobs *Jobs) GetJobsList(limit int, offset int, filter Filter) (jobsList []
 
 	return jobsList, count, nil
 }
-
 
 func (jobs *Jobs) GetJobDetails(id int, jobSlug string) (jobDetail TblJobs, err error) {
 
