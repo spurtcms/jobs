@@ -348,7 +348,7 @@ func (jobsModel JobsModel) GetJobsList(limit int, offset int, filter Filter, DB 
 
 	if filter.JobLocation != "" {
 
-		listQuery = listQuery.Where("job_location = ?", filter.JobLocation)
+		listQuery = listQuery.Where("LOWER(TRIM(job_location)) = LOWER(TRIM(?))", filter.JobLocation)
 	}
 
 	if filter.CategorySlug != "" {
@@ -371,11 +371,11 @@ func (jobsModel JobsModel) GetJobsList(limit int, offset int, filter Filter, DB 
 
 	} else if filter.MinimumYears != 0 {
 
-		listQuery = listQuery.Where("minimum_years >= ?", filter.MinimumYears)
+		listQuery = listQuery.Where("minimum_years = ? or maximum_years = ? or (minimum_years > ? and maximum_years < ?) ", filter.MinimumYears, filter.MinimumYears, filter.MinimumYears, filter.MinimumYears)
 
 	} else if filter.MaximumYears != 0 {
 
-		listQuery = listQuery.Where("maximum_years <= ?", filter.MaximumYears)
+		listQuery = listQuery.Where("maximum_years >= ?", filter.MaximumYears)
 	}
 
 	if filter.DatePosted != "" {
@@ -472,7 +472,7 @@ func (jobsModel JobsModel) GetJobDetails(id int, jobSlug string, DB *gorm.DB) (j
 
 	query := DB.Debug().Table("tbl_jobs").Select("tbl_jobs.*,tbl_categories.id as CatId,tbl_categories.category_name,tbl_categories.category_slug").Joins("inner join tbl_categories on tbl_jobs.categories_id = tbl_categories.id").Where("tbl_jobs.is_deleted = 0").Preload("Category")
 
-	if id != 0 && id != -1 {
+	if id != 0 {
 
 		query = query.Where("tbl_jobs.id = ?", id)
 	} else if jobSlug != "" {

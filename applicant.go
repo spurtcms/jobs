@@ -65,6 +65,37 @@ type CreateApplicantReq struct {
 	StorageType    string
 }
 
+type ApplicantDetails struct {
+	ID             int
+	JobID          int
+	ApplicantID    int
+	Name           string
+	EmailID        string
+	MobileNo       string
+	JobType        string
+	Gender         string
+	Location       string
+	Education      string
+	Graduation     int
+	CompanyName    string
+	Experience     int
+	Skills         string
+	ImagePath      string
+	Image          string
+	CreatedOn      time.Time
+	CreatedBy      int
+	ModifiedOn     time.Time
+	ModifiedBy     int
+	IsDeleted      int
+	DeletedOn      time.Time
+	DeletedBy      int
+	CurrentSalary  int
+	ExpectedSalary int
+	Status         int
+	ResumePath     string
+	ResumeName     string
+	StorageType    string
+}
 
 // Applicant List Function//
 func (Ap *Jobs) ApplicantsList(limit, offset int, filter Filter) (applicants []TblJobsApplicants, count int64, err error) {
@@ -337,5 +368,51 @@ func (Ap *Jobs) MultiSelectApplicantStatus(memberid []int, status int, modifiedb
 	}
 
 	return true, nil
+
+}
+
+func (jobs *Jobs) GetApplicantDetails(jobId, memberId int, emailId string) (applicantDetails ApplicantDetails, err error) {
+
+	if AuthErr := AuthandPermission(jobs); AuthErr != nil {
+		return ApplicantDetails{}, AuthErr
+	}
+
+	applicantDetails, err = Jobsmodel.GetApplicantDetails(jobId, memberId, emailId, jobs.DB)
+	if err != nil {
+
+		return ApplicantDetails{}, err
+	}
+
+	return applicantDetails, nil
+}
+
+func (jobs *Jobs) CheckAlreadyRegistered(jobId int, emailId string) (count int64, err error) {
+
+	if AuthErr := AuthandPermission(jobs); AuthErr != nil {
+		return -1, AuthErr
+	}
+
+	count, err = Jobsmodel.CheckAlreadyRegistered(jobId, emailId, jobs.DB)
+	if err != nil {
+
+		return -1, err
+	}
+
+	return count, nil
+}
+
+func (jobs *Jobs) CreateJobApplication(applicationData ApplicantDetails) error {
+
+	if AuthErr := AuthandPermission(jobs); AuthErr != nil {
+		return AuthErr
+	}
+
+	err := Jobsmodel.CreateJobApplication(applicationData, jobs.DB)
+	if err != nil {
+
+		return err
+	}
+
+	return nil
 
 }

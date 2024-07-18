@@ -168,3 +168,63 @@ func (jobsmodel JobsModel) MultiApplicantIsActive(applicant *TblJobsApplicants, 
 
 	return nil
 }
+
+func (jobsModel JobsModel) GetApplicantDetails(jobId, memberId int, emailId string, DB *gorm.DB) (applicantDetails ApplicantDetails, err error) {
+
+	var (
+		result                *gorm.DB
+		count                 int64
+		finalApplicantDetails ApplicantDetails
+	)
+
+	query := DB.Debug().Table("tbl_jobs_registers").Where("is_deleted = 0 and job_id = ? and email_id = ?", jobId, emailId)
+
+	result = query.Count(&count)
+	if result.Error != nil {
+
+		return ApplicantDetails{}, result.Error
+	}
+
+	if count > 0 {
+
+		result = query.First(&applicantDetails)
+		if result.Error != nil {
+
+			return ApplicantDetails{}, result.Error
+		}
+
+		finalApplicantDetails = applicantDetails
+	} else {
+
+		if err := DB.Debug().Table("tbl_jobs_applicants").Where("is_deleted = 0 and status = 1 and member_id = ?", memberId).First(&applicantDetails).Error; err != nil {
+
+			return ApplicantDetails{}, err
+		}
+
+		finalApplicantDetails = applicantDetails
+	}
+
+	return finalApplicantDetails, nil
+}
+
+func (jobsModel JobsModel) CheckAlreadyRegistered(jobId int, emailId string, DB *gorm.DB) (count int64, err error) {
+
+	result := DB.Debug().Table("tbl_jobs_registers").Where("job_id = ? and email_id = ? and is_deleted = 0", jobId, emailId).Count(&count)
+	if result.Error != nil {
+
+		return -1, result.Error
+	}
+
+	return count, nil
+}
+
+func (jobsModel JobsModel) CreateJobApplication(applicationData ApplicantDetails, DB *gorm.DB) error {
+
+	result := DB.Debug().Table("tbl_jobs_registers").Create(&applicationData)
+	if result.Error != nil {
+
+		return result.Error
+	}
+
+	return nil
+}
