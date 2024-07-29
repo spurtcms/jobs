@@ -142,7 +142,7 @@ func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *go
 
 		} else {
 
-			query = query.Where(" LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where(" LOWER(TRIM(job_title)) LIKE LOWER(TRIM(?)) OR LOWER(TRIM(job_type)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 
@@ -155,7 +155,7 @@ func (jobsmodel JobsModel) JobsList(limit int, offset int, filter Filter, DB *go
 
 	if filter.JobTitle != "" {
 
-		query = query.Debug().Where("LOWER(TRIM(job_title)) ILIKE LOWER(TRIM(?))", "%"+filter.JobTitle+"%")
+		query = query.Debug().Where("LOWER(TRIM(job_title)) LIKE LOWER(TRIM(?))", "%"+filter.JobTitle+"%")
 	}
 
 	if filter.Status == "InActive" {
@@ -280,7 +280,7 @@ func (jobsmodel JobsModel) GetJobApplicantByJobId(id int, limit int, offset int,
 
 		} else {
 
-			query = query.Where("LOWER(TRIM(name)) ILIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) ILIKE LOWER(TRIM(?)) OR LOWER(TRIM(tbl_jobs_applicants.job_type)) ILIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
+			query = query.Where("LOWER(TRIM(name)) LIKE LOWER(TRIM(?))   OR LOWER(TRIM(email_id)) LIKE LOWER(TRIM(?)) OR LOWER(TRIM(tbl_jobs_applicants.job_type)) LIKE LOWER(TRIM(?))", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%", "%"+filter.Keyword+"%")
 
 		}
 	}
